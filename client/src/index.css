@@ -1,7 +1,62 @@
-:root {
-  --bg: #282c34;
-  --header: #fff;
-  --link: #61dafb;
-  --text: hsla(0, 0%, 100%, 0.88);
+.NavBar {
+  position: relative;
+  border: #282c34;
+  text-align: center;
+  font-size: large;
 }
 
+.NavBarA {
+  padding: 5px;
+}
+.NavBarB {
+  padding: 5px;
+}
+.NavBarC {
+  padding: 5px;
+}
+.NavBard {
+  padding: 5px;
+}
+
+.Login-container {
+  text-align: center;
+  
+  border-radius: 10px;
+  
+  
+}
+
+:root {
+  background-image: url('https://www.eatingwell.com/thmb/m5xUzIOmhWSoXZnY-oZcO9SdArQ=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/article_291139_the-top-10-healthiest-foods-for-kids_-02-4b745e57928c4786a61b47d8ba920058.jpg');
+}
+
+.Home-container {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  background: rgba( 255, 255, 255, 0.15 );
+  box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+  backdrop-filter: blur( 1.5px );
+  -webkit-backdrop-filter: blur( 10px );
+  border-radius: 10px;
+  border: 1px solid rgba( 255, 255, 255, 0.25 );
+  height: 40vh;
+  border-radius: 10px;
+}
+
+.recipe-container-single {
+display: flex;
+flex-wrap: nowrap;
+margin: 10px;
+  
+  background: rgba( 255, 255, 255, 0.5 );
+  box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.80 );
+  backdrop-filter: blur( 1.5px );
+  -webkit-backdrop-filter: blur( 10px );
+  border-radius: 10px;
+  border: 1px solid rgba( 255, 255, 255, 0.25 );
+  
+}
+html{
+  cursor:url('/public/logo512.png'), auto;
+}
