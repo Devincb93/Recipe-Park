@@ -15,6 +15,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 # Views go here!
 
 
+app.secret_key = 'session_key'
+
 
 class Users(Resource):
     def get(self):
@@ -98,6 +100,17 @@ class Recipe_by_id(Resource):
         db.session.commit()
         return {'message':'Recipe deleted successfully'}
     
+class Recipe_by_user_id(Resource):
+    def get(self, user_id):
+        
+        if user_id:
+            recipes_by_user_id = Recipe.query.filter(Recipe.user_id == user_id).all()
+            recipes_user_id_dict_list = [recipe.to_dict() for recipe in recipes_by_user_id]
+            return make_response(
+                recipes_user_id_dict_list,
+                200
+            )
+    
 class Comments(Resource):
     def get(self):
         comments_dict_list = [comments.to_dict() for comments in Comment.query.all()]
@@ -139,7 +152,7 @@ class UserFavorites(Resource):
             favorite_ids = [id for (id,) in favorite_ids]  
             return jsonify(favorite_ids)
         except Exception as e:
-            print(f"Error fetching favorite recipe IDs: {e}")
+            
             return {"error": "An error occurred while fetching favorite recipe IDs"}, 500
 
     
@@ -178,19 +191,13 @@ class Login(Resource):
         data = request.get_json()
         username = data.get('username')
         password = data.get('password')
-        
         user = User.query.filter_by(username=username).first()
-
-        if user:
-            print(f"Stored Hash: {user._password}")
-            print(f"Password Provided: {password}")
-            print(f"Hash of Provided Password: {generate_password_hash(password)}")
-        
         if user and user.check_password(password):
             session['user_id'] = user.id
-            return make_response(jsonify({"message": "Login successful", "user_id": user.id}), 200)
-        else:
-            return make_response(jsonify({"error": "Invalid credentials"}), 401)
+            return make_response({"Login successful", "user_id": user.id}, 200)
+        else: 
+            return make_response({"Error":"Invalid credentials"},401)
+
         
 
 class Logout(Resource):
@@ -206,13 +213,15 @@ api.add_resource(Users, '/users')
 api.add_resource(Recipes, '/recipes')
 api.add_resource(Comments, '/comments')
 api.add_resource(User_by_id, '/users/<int:id>')
-api.add_resource(Recipe_by_id, '/recipes/<int:id>')
+api.add_resource(Recipe_by_id, '/recipe/<int:id>')
 api.add_resource(Comment_by_id, '/comments/<int:id>')
 api.add_resource(PostUser, '/create_user')
 api.add_resource(UserFavorites, '/user/<int:user_id>/favorites')
 api.add_resource(RecipeDetails, '/recipes/favorites')
 api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
+api.add_resource(Recipe_by_user_id, '/recipes/<int:user_id>')
+api.add_resource(CheckSession, '/check_session')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

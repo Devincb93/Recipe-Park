@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { MyContext } from '../MyContext';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
@@ -9,13 +9,22 @@ import * as Yup from 'yup';
 function Home() {
     const { handleLogin, loginError } = useContext(MyContext)
     const navigate = useNavigate()
+    const [user, setUser] = useState(null)
 
     useEffect(() => {
-        const user = localStorage.getItem('user')
-        if (user) {
-            navigate('personal_page')
+        const checkSession = async () => {
+            const response = await fetch('/check_session')
+            const data = await response.json()
+            console.log("checkSession", data)
+            if (response.ok){
+                setUser(data)
+                navigate('/personal_page')
+            } else {
+                navigate('/login')
+            }
         }
-    }, [navigate])
+        checkSession()
+    },[])
 
     const handleCreateUserClick = () => {
         navigate('/create_user');

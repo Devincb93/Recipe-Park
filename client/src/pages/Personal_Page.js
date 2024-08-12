@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 function PersonalPage() {
     
-    const {handleLogout, userLogin, fetch_recipes, recipes} = useContext(MyContext)
+    const { userLogin, userRecipes, recipes_fetch_by_user} = useContext(MyContext)
     const navigate = useNavigate()
 
     
@@ -13,9 +13,9 @@ function PersonalPage() {
         if (!userLogin){
             navigate('/')
         } else {
-            fetch_recipes()
+            recipes_fetch_by_user()
         }
-    },[navigate, fetch_recipes])
+    },[navigate, recipes_fetch_by_user])
 
     
 
@@ -29,7 +29,7 @@ function PersonalPage() {
         <div>
         <h1>Home Page</h1>
         <h2>My recipes</h2>
-        {recipes.map(recipe => (
+        {userRecipes.map(recipe => (
             <div key={recipe.id}>
             <h4>{recipe.title}</h4>
             </div>

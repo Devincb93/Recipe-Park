@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
+import { date } from "yup";
 
 const MyContext = React.createContext();
 
@@ -11,10 +12,11 @@ const [recipes, setRecipes] = useState([])
 const [recipeCollections, setRecipeCollections] = useState([])
 const [userLogin, setUserLogin] = useState(null)
 const [loginError, setLoginError] = useState(null)
+const [userRecipes, setUserRecipes] = useState([])
 
-  const navigate = useNavigate()
+const navigate = useNavigate()
 
-  const recipes_fetch = useCallback(async () => {
+const recipes_fetch = useCallback(async () => {
     try {
         const response = await fetch("/recipes")
         if (response.ok) {
@@ -27,19 +29,26 @@ const [loginError, setLoginError] = useState(null)
         console.error("Error fetching recipes", error)
     }
    },[]);
+  
+   
 
-   const fetchFavoriteRecipeIds = async (user_id) => {
-    try {
-        const response = await fetch(`/user/${user_id}/favorites`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch favorite recipe IDs');
-        }
-        const favoriteIds = await response.json();
-        return favoriteIds;
-    } catch (error) {
-        console.error('Error fetching favorite recipe IDs:', error);
+ 
+
+
+const fetchFavoriteRecipeIds = async (user_id) => {
+  try {
+    const response = await fetch (`/user/${user_id}/favorites`)
+    if (response.ok) {
+      const favoriteIds = await response.json()
+      return favoriteIds
+    } else {
+      throw new Error('Failed to fetch recipe ids')
     }
+  } catch (error) {
+    console.log(error)
+  }
 }
+
 const fetchFavoriteRecipes = async (user_id) => {
   try {
       const favoriteIds = await fetchFavoriteRecipeIds(user_id);
@@ -67,8 +76,8 @@ const handleLogin = async (values) => {
     })
     if (response.ok) {
       const data = await response.json()
-      localStorage.setItem('user', JSON.stringify(data))
       setUserLogin(data)
+      sessionStorage.setItem('user', JSON.stringify(data))
       setLoginError(null)
       console.log('Login successful', data);
       navigate('/personal_page')
@@ -81,9 +90,6 @@ const handleLogin = async (values) => {
     setLoginError('An unexpected error occurred. Please try again.')
   }
 }
-
-
-   
 
 const formik = useFormik({
   initialValues: {
@@ -102,10 +108,8 @@ const handleLogout = async () => {
     })
     if (response.ok) {
       const data = await response.json()
-      
       setUserLogin(null)
-      
-      
+      sessionStorage.removeItem('user')
       navigate('/')
     } else {
       const error = await response.json()
@@ -132,6 +136,8 @@ const handleLogout = async () => {
         loginError,
         formik,
         handleLogout,
+        userRecipes,
+        
         
       
       }}

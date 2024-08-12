@@ -5,16 +5,21 @@ import { MyContext } from '../MyContext';
 
 
 function RecipePage() {
-    const {recipes, recipes_fetch} = useContext(MyContext)
+    const [recipes, setRecipes] = useState([])
     const [heart, setHeart] = useState({})
     
 
 
     console.log(recipes)
 
-    useEffect(()=> {
-        recipes_fetch()
-    },[])
+    useEffect(() => {
+        const fetchRecipes = async () => {
+            const response = await fetch ('/recipes')
+            const data = await response.json()
+            setRecipes(data)
+        } 
+        fetchRecipes()
+       },[])
 
     const toggleHeart = (id) => {
         setHeart(prevHeart => ({
@@ -23,6 +28,9 @@ function RecipePage() {
         }));
     };
 
+   
+
+   
     return(
         <div>
         <h1>Recipe Page</h1>
