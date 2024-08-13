@@ -1,22 +1,39 @@
 import React, { useContext, useEffect } from 'react'
 import { MyContext } from '../MyContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import Comments from './Comments'
 
 function PersonalPage() {
+    const location = useLocation()
     
-    const { userLogin, userRecipes, recipes_fetch_by_user} = useContext(MyContext)
+    const { userLogin, setUserRecipes, userRecipes} = location.state || {}
     const navigate = useNavigate()
 
-    
-    useEffect(() =>
-    {
-        if (!userLogin){
-            navigate('/')
+    useEffect(() => {
+        if (!userLogin) {
+            navigate('/');
         } else {
-            recipes_fetch_by_user()
-        }
-    },[navigate, recipes_fetch_by_user])
+            const fetchRecipesByUser = async () => {
+                try {
+                    const response = await fetch(`/recipes/${userLogin.user_id}`);
+                    if (response.ok) {
+                        const recipes = await response.json();
+                        setUserRecipes(recipes);
+                    } else {
+                        console.log('Error fetching recipes');
+                    }
+                } catch (error) {
+                    console.log('Error fetching recipes');
+                } 
+            };
 
+            fetchRecipesByUser();
+        }
+    }, [navigate, userLogin, setUserRecipes]);
+
+ 
+ 
+    
     
 
     
@@ -32,6 +49,7 @@ function PersonalPage() {
         {userRecipes.map(recipe => (
             <div key={recipe.id}>
             <h4>{recipe.title}</h4>
+            
             </div>
         ))}
         

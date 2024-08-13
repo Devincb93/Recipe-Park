@@ -122,7 +122,10 @@ class Comments(Resource):
     def post(self):
         data = request.get_json()
         new_comment = Comment(
-            content=data['content']
+            content=data['content'],
+            recipe_id=data['recipe_id'],
+            user_id = data['user_id']
+
         )
         db.session.add(new_comment)
         db.session.commit()
@@ -174,16 +177,15 @@ class RecipeDetails(Resource):
         
 class CheckSession(Resource):
     def get(self):
-        user_id = session.get('user_id')
-        if user_id:
-            user = User.query.filter(User.id == user_id).first()
+        try :
+            user = User.query.filter(User.id == session.get('user_id')).first()
             if user:
                 return user.to_dict(), 200
             else:
                 return {'message': '401: Not Authorized'}, 401
-        else:
-            return {'message': '401: Not Authorized'}, 401        
-        
+                
+        except Exception as error:
+            return {"error": str(error)}, 500
 
 
 class Login(Resource):
@@ -191,21 +193,54 @@ class Login(Resource):
         data = request.get_json()
         username = data.get('username')
         password = data.get('password')
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter(User.username==username).first()
         if user and user.check_password(password):
             session['user_id'] = user.id
-            return make_response({"Login successful", "user_id": user.id}, 200)
+            return make_response(user.to_dict, 201)
         else: 
             return make_response({"Error":"Invalid credentials"},401)
 
-        
-
 class Logout(Resource):
     def delete(self): 
-        session.clear()
-        return {'message': '204: No Content'}, 204
+        session['user_id'] = None
+        return {}, 204
+    
 
+class CommentsByRecipe(Resource):
+    def get(self, recipe_id):
+        comments = Comment.query.filter_by(recipe_id=recipe_id).all()
+        comments_dict_list = [comment.to_dict() for comment in comments]
+        return make_response(comments_dict_list, 200)
 
+    def post(self):
+        data = request.get_json()
+        new_comment = Comment(
+            content=data.get('content'),
+            recipe_id=data.get('recipe_id'),
+            user_id=data.get('user_id')
+        )
+        db.session.add(new_comment)
+        db.session.commit()
+        return new_comment.to_dict(), 201
+    
+class Recipe_by_userss(Resource):
+    def get(self, user_id):
+        recipes = Recipe.query.filter(Recipe.user_id == user_id).all()
+        recipe_dict_list = [recipe.to_dict() for recipe in recipes]
+        return make_response(recipe_dict_list, 200)
+    
+    ## grab the recipe thats ingredients greater than 10length
+
+class Recipe_by_ing_len(Resource):
+    def get(self, user_id):
+        all = []
+        recipes = Recipe.query.filter(Recipe.user_id == user_id).all()
+        for recipe in recipes:
+            if len(recipe.ingredients) >= 10:
+                all.append(recipe.to_dict())
+
+        return make_response(all, 200)
+        
     
 
     
@@ -222,6 +257,9 @@ api.add_resource(Login, '/login')
 api.add_resource(Logout, '/logout')
 api.add_resource(Recipe_by_user_id, '/recipes/<int:user_id>')
 api.add_resource(CheckSession, '/check_session')
+api.add_resource(CommentsByRecipe, '/comments/recipe/<int:recipe_id>')
+api.add_resource(Recipe_by_userss, '/recipe/<int:user_id>')
+api.add_resource(Recipe_by_ing_len, '/recipes_ingredient/<int:user_id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

@@ -22,6 +22,8 @@ class RecipeCollection(db.Model):
             'recipe_id': self.recipe_id,
             
         }
+    
+    
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'

@@ -10,10 +10,7 @@ const MyContext = React.createContext();
 const MyProvider = (props) => {
 const [recipes, setRecipes] = useState([])
 const [recipeCollections, setRecipeCollections] = useState([])
-const [userLogin, setUserLogin] = useState(null)
-const [loginError, setLoginError] = useState(null)
 const [userRecipes, setUserRecipes] = useState([])
-
 const navigate = useNavigate()
 
 const recipes_fetch = useCallback(async () => {
@@ -29,11 +26,6 @@ const recipes_fetch = useCallback(async () => {
         console.error("Error fetching recipes", error)
     }
    },[]);
-  
-   
-
- 
-
 
 const fetchFavoriteRecipeIds = async (user_id) => {
   try {
@@ -64,63 +56,8 @@ const fetchFavoriteRecipes = async (user_id) => {
   }
 }
 
-const handleLogin = async (values) => {
-  const { username, password} = values
-  try {
-    const response = await fetch('/login', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username: username, password: password }),
-    })
-    if (response.ok) {
-      const data = await response.json()
-      setUserLogin(data)
-      sessionStorage.setItem('user', JSON.stringify(data))
-      setLoginError(null)
-      console.log('Login successful', data);
-      navigate('/personal_page')
-    } else {
-      const error = await response.json()
-      setLoginError(error.error)
-    }
-  } catch (error) {
-    console.log('Error during login:', error)
-    setLoginError('An unexpected error occurred. Please try again.')
-  }
-}
 
-const formik = useFormik({
-  initialValues: {
-    username: '',
-    password: ''
-  },
-  onSubmit: (values) => handleLogin(values),
-});
 
-const handleLogout = async () => {
-  
-  try {
-    const response = await fetch('/logout', {
-      method: 'DELETE',
-      
-    })
-    if (response.ok) {
-      const data = await response.json()
-      setUserLogin(null)
-      sessionStorage.removeItem('user')
-      navigate('/')
-    } else {
-      const error = await response.json()
-      console.error("Logout Failed")
-    }
-  } catch (error) {
-    console.log('Error during logout:', error)
-  }
-}
-
-  
 
   return (
     <MyContext.Provider
@@ -130,16 +67,7 @@ const handleLogout = async () => {
         recipeCollections,
         fetchFavoriteRecipeIds,
         fetchFavoriteRecipes,
-        userLogin,
-        setUserLogin,
-        handleLogin,
-        loginError,
-        formik,
-        handleLogout,
         userRecipes,
-        
-        
-      
       }}
     >
       {props.children}

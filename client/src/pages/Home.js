@@ -1,87 +1,84 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { MyContext } from '../MyContext';
+
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import Login from './Login';
+import Welcome_Page from './WelcomeUser';
 
 
 
 function Home() {
-    const { handleLogin, loginError } = useContext(MyContext)
+    
     const navigate = useNavigate()
     const [user, setUser] = useState(null)
+    const [userLogin, setUserLogin] = useState(null)
+    const [loginError, setLoginError]= useState(null)
 
     useEffect(() => {
-        const checkSession = async () => {
-            const response = await fetch('/check_session')
-            const data = await response.json()
-            console.log("checkSession", data)
-            if (response.ok){
-                setUser(data)
-                navigate('/personal_page')
-            } else {
-                navigate('/login')
+        fetch('/check_session')
+        .then((response) => {
+            if (response.ok) {
+                response.json()
+                .then((user)=>{setUser(user)
+                console.log(user)    
+                })
+                
             }
+        })
+        
+    }, []);
+
+    const handleLogin = async (values) => {
+        const { username, password } = values;
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data);
+                navigate('/personal_page');
+            } else {
+                const error = await response.json();
+                setLoginError(error.error);
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+            setLoginError('An unexpected error occurred. Please try again.');
         }
-        checkSession()
-    },[])
+    };
+
 
     const handleCreateUserClick = () => {
         navigate('/create_user');
     };
 
-    const validationSchema = Yup.object({
-        username: Yup.string().required('Username is required'),
-        password: Yup.string().required('Password is requierd'),
-    })
-
-    const formik = useFormik({
-        initialValues: {
-            username: '',
-            password: '',
-        },
-        validationSchema: validationSchema,
-        onSubmit: async (values, { setSubmitting }) => {
-            await handleLogin(values);
-            setSubmitting(false);
-            if (!loginError) {
-                navigate('/personal_page');
-            }
-        },
-    });
-
-
-
-
-
+    
 
     return (
-        <div className='Home-container'>
-        <h1>Recipe Park </h1>
-        <p>A place to share your recipes with a new friend!</p>
-            <div className='Login-container'>
-                <h3>Enter your username and password to Login</h3>
-                <form onSubmit={formik.handleSubmit}>
-                    <input
-                        type='text'
-                        name='username'
-                        placeholder='Username'
-                        value={formik.values.username}
-                        onChange={formik.handleChange}
-                    />
-                    <input
-                        type='password'
-                        name='password'
-                        placeholder='Password'
-                        value={formik.values.password}
-                        onChange={formik.handleChange}
-                    />
-                <button type='submit'>Login</button>
-                </form>
-                    <button onClick={handleCreateUserClick}>Create User</button>
+        <div>
+        {user ? (
+            <div>
+                <Welcome_Page user={user}/>
                 
             </div>
-        </div>
+        ) : (
+            <div>
+                <Login handleLogin={handleLogin} loginError={loginError}/>
+                <button onClick={handleCreateUserClick}>create_user</button>
+                
+            </div>
+        )}
+      </div>
+        
+        
+    
     )
 }
 
