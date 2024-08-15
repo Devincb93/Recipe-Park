@@ -1,21 +1,22 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useContext} from 'react'
 import { FaRegHeart } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa";
 import Comments from './Comments';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { MyContext } from '../MyContext';
 
 
 function RecipePage() {
-    const { id } = useParams()
-    const location = useLocation()
-    const { userLogin } = location.state || {}
+    
+    
+    const { user } = useContext(MyContext)
     const [recipes, setRecipes] = useState([])
     const [heart, setHeart] = useState({})
     const [comments, setComments] = useState([])
+    const [userForFav, setUserForFave] = useState({})
     
 
 
-    console.log(userLogin)
+    
 
     useEffect(() => {
         const fetchRecipes = async () => {
@@ -52,41 +53,38 @@ function RecipePage() {
             } catch (error) {
                 console.error('Error fetching comments:', error);
             }
-        };
+        }
 
         fetchRecipes();
-    }, []);
 
-    const toggleHeart = (id) => {
-        setHeart(prevHeart => ({
-            ...prevHeart,
-            [id]: !prevHeart[id]
-        }));
-    };
-
-    const addComment = async (content) => {
-        try {
-            const response = await fetch('/comments', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    content,
-                    recipe_id:  id,
-                    user_id: sessionStorage.getItem('user_id')     
-                }),
-            });
-            const newComment = await response.json();
-            if (Array.isArray(comments)) {
-                setComments((prevComments) => [...prevComments, newComment]);
-            } else {
-                console.error('Comments is not an array.');
-            }
-        } catch (error) {
-            console.error('Failed to add comment:', error);
+        const fetchUserforFavorites = () => {
+            fetch(`/users/${user.username}`)
+            .then((resp) => resp.json())
+            .then ((data) => {
+                setUserForFave(data)
+            })
         }
-    };
+        fetchUserforFavorites()
+    }, [])
+
+    const toggleHeart = (recipe_id) => {
+        fetch('/newfavorite', {
+            method: "POST",
+            headers: {
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify({
+                user_id: userForFav.user_id,
+                recipe_id: recipe_id
+            })
+        })
+        .then((resp) => resp.json)
+        .then((data) => {
+            console.log("success")
+        })
+    }
+
+    
 
    
 
@@ -105,7 +103,7 @@ function RecipePage() {
                                     {heart[recipe.id] ? <FaHeart /> : <FaRegHeart />}
                                 </div>
                                 
-                                <Comments comments={comments[recipe.id] || []} onAddComment={addComment} />
+                                {/* <Comments comments={comments[recipe.id] || []} onAddComment={addComment} /> */}
                             </div>
                         </ul>
                     </div>

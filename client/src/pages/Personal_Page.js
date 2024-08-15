@@ -38,23 +38,20 @@ function PersonalPage() {
 
     
     
-    if (!userLogin){
-        return <h1>Loading...</h1>
-        
-    }
-    return (
-        <div>
-        <h1>Home Page</h1>
-        <h2>My recipes</h2>
-        {userRecipes.map(recipe => (
-            <div key={recipe.id}>
-            <h4>{recipe.title}</h4>
+    
+    // return (
+    //     <div>
+    //     <h1>Home Page</h1>
+    //     <h2>My recipes</h2>
+    //     {userRecipes.map(recipe => (
+    //         <div key={recipe.id}>
+    //         <h4>{recipe.title}</h4>
             
-            </div>
-        ))}
+    //         </div>
+    //     ))}
         
-        </div>
-    )
+    //     </div>
+    // )
 }
 
 export default PersonalPage

@@ -7,7 +7,7 @@ function CreateUser(){
     
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    // const [password, setPassword] = useState('')
 
 
     const handleCreateUser = (e) => {
@@ -17,15 +17,15 @@ function CreateUser(){
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, email, password }),    
+            body: JSON.stringify({ username, email }),    
         })
         .then(resp => resp.json())
         .then(data => {
             console.log(`User ${data.username} created`)
             setUsername('')
             setEmail('')
-            setPassword('')
-            navigate('/recipes')
+            // setPassword('')
+            navigate('/')
         })
     }
 
@@ -38,7 +38,7 @@ function CreateUser(){
             <p>Create a user by entering your information into the field. If a user is created the user accepts all terms and conditions.</p>
             <input placeholder='Username' type='username' value={username} onChange={(e) => setUsername(e.target.value)}></input>
             <input placeholder='Email' type='email' value={email} onChange={(e) => setEmail(e.target.value)}></input>
-            <input placeholder='Password' type='password' value={password} onChange={(e) => setPassword(e.target.value)}></input>
+            {/* <input placeholder='Password' type='password' value={password} onChange={(e) => setPassword(e.target.value)}></input> */}
             <button type='submit'>Submit</button>
         </form>
        </div>

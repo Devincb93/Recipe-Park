@@ -1,8 +1,8 @@
-"""added db to db.relationship (forgot)
+"""removed collection name
 
-Revision ID: 6f68ff9a1e44
-Revises: 8c626ab46e22
-Create Date: 2024-08-05 18:08:12.219792
+Revision ID: 2392152d200f
+Revises: 04341afd29e7
+Create Date: 2024-08-14 21:23:03.108016
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6f68ff9a1e44'
-down_revision = '8c626ab46e22'
+revision = '2392152d200f'
+down_revision = '04341afd29e7'
 branch_labels = None
 depends_on = None
 

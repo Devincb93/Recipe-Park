@@ -15,12 +15,11 @@ from models import db, User, Recipe, Comment, RecipeCollection
 def users():
     users = []
     for i in range(5):
-        password =fake.password()
-        hashed = generate_password_hash(password)
+        
         user = User(
         username = fake.user_name(),
         email = fake.email(),
-        _password = hashed
+        
         )
         users.append(user)
     return users

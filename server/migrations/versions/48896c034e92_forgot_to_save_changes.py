@@ -1,8 +1,8 @@
-"""updated models
+"""forgot to save changes
 
-Revision ID: b7aceca4d6bd
-Revises: 39ffd6a86d54
-Create Date: 2024-08-06 17:33:57.275945
+Revision ID: 48896c034e92
+Revises: 2392152d200f
+Create Date: 2024-08-14 21:23:34.560430
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b7aceca4d6bd'
-down_revision = '39ffd6a86d54'
+revision = '48896c034e92'
+down_revision = '2392152d200f'
 branch_labels = None
 depends_on = None
 

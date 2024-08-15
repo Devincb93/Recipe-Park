@@ -1,58 +1,68 @@
-import React from 'react'
-import * as Yup from 'yup';
+import React, { useState } from 'react'
+import * as yup from 'yup';
 import { useFormik } from 'formik';
 import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { MyContext } from '../MyContext';
 
-function Login({ handleLogin, loginError}) {
+
+function Login({  loginError}) {
+
+    const { loginUser } = useContext(MyContext)
 
     const navigate = useNavigate()
-
-    const validationSchema = Yup.object({
-        username: Yup.string().required('Username is required'),
-        password: Yup.string().required('Password is requierd'),
+    
+    const formSchema = yup.object().shape({
+        username: yup.string().required("Must enter a username"),
     })
 
     const formik = useFormik({
         initialValues: {
-            username: '',
-            password: '',
+            username: "",
         },
-        validationSchema: validationSchema,
-        onSubmit: async (values, { setSubmitting }) => {
-            await handleLogin(values);
-            setSubmitting(false);
-            if (!loginError) {
-                
-            }
-        },
-    });
+        validationSchema: formSchema,
+        onSubmit: (values) => {
+            console.log("form submitted with values:", values)
+            fetch(`/login?username=${encodeURIComponent(values.username)}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                }})
 
+            .then((res) => res.json())
+            .then((data) => {
+                if (data && data.id){
+                loginUser(data)
+                console.log("login data", data)
+                navigate('/personal_page')
+                console.log("success")
+            } else {
+                console.log("Login fail", data)
+            }})
+        }
+    })
+    
     return(
-        <div className='Home-container'>
-        <h1>Recipe Park </h1>
-        <p>A place to share your recipes with a new friend!</p>
-            <div className='Login-container'>
-                <h3>Enter your username and password to Login</h3>
-                <form onSubmit={formik.handleSubmit}>
-                    <input
-                        type='text'
-                        name='username'
-                        placeholder='Username'
-                        value={formik.values.username}
-                        onChange={formik.handleChange}
-                        autoComplete='username'
+        <div>
+            <form onSubmit={formik.handleSubmit}>
+                <label htmlFor='username'>Username</label>
+                <br/>
+                <input
+                    id="username"
+                    name="username"
+                    onChange={formik.handleChange}
+                    value={formik.values.username}
                     />
-                    <input
-                        type='password'
-                        name='password'
-                        placeholder='Password'
-                        value={formik.values.password}
-                        onChange={formik.handleChange}
-                        autoComplete='current-password'
-                    />
-                <button type='submit'>Login</button>
-                </form>
-            </div>
+                    <p style={{color:"red"}}>{formik.errors.username}</p>
+                    <button type='submit'>Login</button>
+            </form>
+            <table >
+                <tbody>
+                    <tr>
+                        <th></th>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     )
 }

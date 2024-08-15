@@ -12,6 +12,7 @@ from config import app, db, api
 from models import User, Recipe, Comment, RecipeCollection
 from werkzeug.security import check_password_hash, generate_password_hash
 
+
 # Views go here!
 
 
@@ -28,12 +29,12 @@ class Users(Resource):
 class PostUser(Resource):   
     def post(self):
         data = request.get_json()
-        password = data.get('password')
+        
         new_user = User(
             username=data.get('username'),
             email=data.get('email'),
         )
-        new_user.set_password(password)
+        
         db.session.add(new_user)
         db.session.commit()
 
@@ -59,7 +60,12 @@ class User_by_id(Resource):
         db.session.commit()
         return {'message':'User deleted successfully'}
             
-    
+class User_by_username(Resource):
+    def get(self, username):
+        user = User.query.get(username)
+        return user.to_dict(),200
+
+
 class Recipes(Resource):
     def get(self):
         recipes_dict_list = [recipe.to_dict() for recipe in Recipe.query.all()]
@@ -189,14 +195,13 @@ class CheckSession(Resource):
 
 
 class Login(Resource):
-    def post(self):
-        data = request.get_json()
-        username = data.get('username')
-        password = data.get('password')
+    def get(self):
+        username = request.args.get('username')
+        
         user = User.query.filter(User.username==username).first()
-        if user and user.check_password(password):
-            session['user_id'] = user.id
-            return make_response(user.to_dict, 201)
+        if user:
+            # session['user_id'] = user.id
+            return user.to_dict(), 200
         else: 
             return make_response({"Error":"Invalid credentials"},401)
 
@@ -240,6 +245,16 @@ class Recipe_by_ing_len(Resource):
                 all.append(recipe.to_dict())
 
         return make_response(all, 200)
+    
+class Recipe_collection_post(Resource):
+    def post(self):
+        data = request.get_json()
+        new_collection = RecipeCollection(
+            user_id=data.get('user_id'),
+            recipe_id=data.get('recipe_id')
+        )
+        db.session.add(new_collection)
+        db.session.commit()
         
     
 
@@ -260,6 +275,8 @@ api.add_resource(CheckSession, '/check_session')
 api.add_resource(CommentsByRecipe, '/comments/recipe/<int:recipe_id>')
 api.add_resource(Recipe_by_userss, '/recipe/<int:user_id>')
 api.add_resource(Recipe_by_ing_len, '/recipes_ingredient/<int:user_id>')
+api.add_resource(User_by_username, '/users/<string:username>')
+api.add_resource(Recipe_collection_post, '/newfavorite')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

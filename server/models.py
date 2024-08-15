@@ -14,6 +14,7 @@ from config import db
 
 class RecipeCollection(db.Model):
     __tablename__ = 'recipe_collections'
+    
     user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
     recipe_id = Column(Integer, ForeignKey('recipes.id'), primary_key=True)
     def to_dict(self):
@@ -33,16 +34,13 @@ class User(db.Model, SerializerMixin):
     id = Column(Integer, primary_key=True)
     username = Column(String, nullable=False)
     email = Column(String)
-    _password = Column(String, nullable=False)
+    
 
     recipes = relationship('Recipe', back_populates='user', cascade='all, delete-orphan')
     comments = relationship('Comment', back_populates='user', cascade='all, delete-orphan')
     saved_recipes = relationship('Recipe', secondary='recipe_collections', back_populates='saved_by_users')
 
-    def set_password(self, password):
-        self._password = generate_password_hash(password)
-    def check_password(self,password):
-        return check_password_hash(self._password, password)
+    
 
     @validates('username')
     def validate_username(self, key, username):
@@ -60,13 +58,7 @@ class User(db.Model, SerializerMixin):
             return email
         
 
-    @validates('_password')
-    def validate_password(self, key, _password):
-        if len(_password) < 8:
-            raise ValueError("Password must be a minimum of 8 characters")
-        else:
-            return _password
-
+    
 
 class Recipe(db.Model, SerializerMixin):
     __tablename__ = 'recipes'

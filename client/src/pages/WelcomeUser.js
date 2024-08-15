@@ -1,6 +1,9 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { MyContext } from '../MyContext'
 
-function Welcome_Page({user}){
+function Welcome_Page(){
+
+    const { user } = useContext(MyContext)
     return (
         <h1>Welcome {user.username}</h1>
     )
