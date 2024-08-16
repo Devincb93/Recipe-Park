@@ -14,7 +14,7 @@ function RecipePage() {
                     const data = await response.json();
                     setRecipes(data);
 
-                    const userFavoritesResponse = await fetch(`/userfavorites/${user.username}`);
+                    const userFavoritesResponse = await fetch(`/favorites/${user.username}`);
                     if (userFavoritesResponse.ok) {
                         const userFavorites = await userFavoritesResponse.json();
                         const favoritesState = {};
@@ -33,8 +33,9 @@ function RecipePage() {
     }, [user.username]);
 
     const toggleFavorite = async (recipe_id) => {
+        console.log("Recipe ID:", recipe_id); // Log recipe_id
         const isFavorited = favorites[recipe_id];
-
+        
         if (isFavorited) {
             try {
                 const response = await fetch(`/removefavorite/${user.id}/${recipe_id}`, {

@@ -8,20 +8,25 @@ function FavoritesPage() {
     useEffect(() => {
         const fetchFavorites = async () => {
             try {
-                const response = await fetch(`/userfavorites/${user.username}`);
+                console.log(user.id)
+                const response = await fetch(`/favorites/${user.id}`);
                 if (response.ok) {
                     const data = await response.json();
                     setFavorites(data);
+                    console.log(favorites)
+                    console.log(data)
+                    
                 }
             } catch (error) {
                 console.error('Error fetching favorites:', error);
             }
         };
-
+    
         fetchFavorites();
-    }, [user.username]);
+    }, []);
 
     const removeFavorite = async (recipe_id) => {
+        console.log("Removing Favorite, Recipe ID:", recipe_id); // Verify recipe_id
         try {
             const response = await fetch(`/removefavorite/${user.id}/${recipe_id}`, {
                 method: "DELETE",
@@ -40,7 +45,7 @@ function FavoritesPage() {
             <ul>
                 {favorites.length > 0 ? (
                     favorites.map(favorite => (
-                        <div className='favorite-container-single' key={favorite.recipe_id}>
+                        <div className='favorite-container-single' key={favorite.id}>
                             <h2>{favorite.title}</h2>
                             <p>{favorite.description}</p>
                             <button onClick={() => removeFavorite(favorite.recipe_id)}>Remove</button>

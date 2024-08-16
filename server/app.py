@@ -254,12 +254,10 @@ class Recipe_collection_post(Resource):
         )
         db.session.add(new_collection)
         db.session.commit()
-
-
-        
     
 class RemoveFavorite(Resource):
     def delete(self, user_id, recipe_id):
+        print(f"Removing favorite: user_id={user_id}, recipe_id={recipe_id}")  # Log incoming data
         favorite = RecipeCollection.query.filter_by(user_id=user_id, recipe_id=recipe_id).first()
         if favorite:
             db.session.delete(favorite)
@@ -297,26 +295,19 @@ class AddFavorite(Resource):
         return jsonify({'status': 'success'}), 201
     
 class UserFavoritesPage(Resource):
-    def get(self):
-        user_id = request.json.get('user_id')
-        recipe_id = request.json.get('recipe_id')
-        
-        if not user_id or not recipe_id:
-            return jsonify({"error": "Missing parameters"}), 400
+    def get(self, user_id):
+        if not user_id:
+            return jsonify({"error": "Missing user_id parameter"}), 400
 
-        existing_entry = RecipeCollection.query.filter_by(user_id=user_id, recipe_id=recipe_id).first()
-        
-        if existing_entry:
-            # Remove from favorites
-            db.session.delete(existing_entry)
-            db.session.commit()
-            return jsonify({"message": "Removed from favorites"}), 200
+        user_favorites = RecipeCollection.query.filter_by(user_id=user_id).all()
+
+        if user_favorites:
+            recipe_ids = [favorite.recipe_id for favorite in user_favorites]
+            recipes = Recipe.query.filter(Recipe.id.in_(recipe_ids)).all()
+            recipes_list = [recipe.to_dict() for recipe in recipes]
+            return recipes_list, 200
         else:
-            # Add to favorites
-            new_entry = RecipeCollection(user_id=user_id, recipe_id=recipe_id)
-            db.session.add(new_entry)
-            db.session.commit()
-            return jsonify({"message": "Added to favorites"}), 200
+            return jsonify({"message": "No favorite recipes found"}), 404
         
 class CheckFavorite(Resource):
     def get():
@@ -351,7 +342,7 @@ api.add_resource(Recipe_collection_post, '/newfavorite')
 api.add_resource(RemoveFavorite, '/removefavorite/<int:user_id>/<int:recipe_id>')
 api.add_resource(GetUserFavorites, '/userfavorites/<username>')
 api.add_resource(AddFavorite, '/newfavorite')
-api.add_resource(UserFavoritesPage, '/favorites')
+api.add_resource(UserFavoritesPage, '/favorites/<int:user_id>')
 api.add_resource(CheckFavorite, '/check_favorite')
 
 if __name__ == '__main__':
