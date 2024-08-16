@@ -1,47 +1,49 @@
-import React, {useState} from 'react'
+import React, { useContext, useState } from 'react';
+import { MyContext } from '../MyContext';
 
-function Comments({comments, onAddComment}){
+function CommentForm({ recipeId, setComments }) {
+    const { user } = useContext(MyContext)
     const [newComment, setNewComment] = useState('');
-    const handleCommentChange = (event) => {
-        setNewComment(event.target.value);
-    };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        if (newComment.trim()) {
-            onAddComment(newComment);
-            setNewComment(''); 
+    const handleCommentSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch('/addcomment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    recipe_id: recipeId,
+                    user_id: user.id,
+                    content: newComment,
+                }),
+            });
+            if (response.ok) {
+                setNewComment('');
+                // Refresh comments (can be optimized by only updating the specific recipe)
+                const updatedCommentsResponse = await fetch(`/comments/recipe/${recipeId}`);
+                const updatedComments = await updatedCommentsResponse.json();
+                setComments(prevComments => ({
+                    ...prevComments,
+                    [recipeId]: updatedComments,
+                }));
+            }
+        } catch (error) {
+            console.error('Error adding comment:', error);
         }
     };
 
     return (
-        <div>
-            <h3>Comments:</h3>
-            {comments.length > 0 ? (
-                <ul>
-                    {comments.map((comment) => (
-                        <li key={comment.id}>
-                            <p>{comment.content}</p>
-                            
-                            <small>Posted on: {new Date(comment.created_at).toLocaleDateString()}</small>
-                        </li>
-                    ))}
-                </ul>
-            ) : (
-                <p>No comments available.</p>
-            )}
-            <form onSubmit={handleSubmit}>
-                <textarea
-                    value={newComment}
-                    onChange={handleCommentChange}
-                    placeholder="Add a comment..."
-                    rows="4"
-                    cols="50"
-                />
-                <button type="submit">Add Comment</button>
-            </form>
-        </div>
-    )
+        <form onSubmit={handleCommentSubmit}>
+            <textarea 
+                value={newComment} 
+                onChange={(e) => setNewComment(e.target.value)} 
+                placeholder="Add a comment" 
+            />
+            <button type="submit">Submit</button>
+        </form>
+    );
 }
 
-export default Comments
+export default CommentForm;

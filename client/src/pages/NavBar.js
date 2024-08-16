@@ -43,6 +43,7 @@ function NavBar() {
             <Link className='NavBarB' to='/recipes'>All Recipes</Link>
             <Link className='NavBarC' to='/favorites'>Favorites</Link>
             <Link className='NavBarD' to='/about'>About</Link>
+            <Link className='NavBarE' to='/personal_page'>My Page</Link>
             
              {user ? (
                 <button onClick={handleLogout}>Logout</button>

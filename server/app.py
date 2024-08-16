@@ -324,7 +324,60 @@ class CheckFavorite(Resource):
 
         is_favorited = RecipeCollection.query.filter_by(user_id=user_id, recipe_id=recipe_id).first() is not None
         return jsonify({"isFavorited": is_favorited}), 200
+    
+class AddComment(Resource):
+    def get(self, recipe_id):
+        data = request.get_json()
+        recipe_id = data.get('recipe_id')
+        user_id = data.get('user_id')
+        content = data.get('content')
 
+        if not recipe_id or not user_id or not content:
+            return jsonify({'message': 'Missing data'}), 400
+
+        new_comment = Comment(recipe_id=recipe_id, user_id=user_id, content=content)
+        db.session.add(new_comment)
+        db.session.commit()
+
+        return jsonify({'message': 'Comment added successfully'}), 201
+    
+class AddRecipe(Resource):
+    def post():
+        data = request.get_json()
+        new_recipe = Recipe(
+            title=data['title'],
+            description=data['description'],
+            ingredients=data['ingredients'],
+            instructions=data['instructions'],
+            user_id=data['user_id']  
+        )
+        db.session.add(new_recipe)
+        db.session.commit()
+        return new_recipe.to_dict(), 201
+    
+class DeleteRecipe(Resource):
+    def delete(self, id):
+        recipe = Recipe.query.get(id)
+        if recipe:
+            db.session.delete(recipe)
+            db.session.commit()
+            return jsonify({"message": "Recipe deleted successfully"})
+        else:
+            return jsonify({"error": "Recipe not found"}), 404
+        
+class UpdateRecipe(Resource):
+    def put(self, id):
+        data = request.json
+        recipe = Recipe.query.get(id)
+        if recipe:
+            recipe.title = data.get('title', recipe.title)
+            recipe.description = data.get('description', recipe.description)
+            recipe.ingredients = data.get('ingredients', recipe.ingredients)
+            recipe.instructions = data.get('instructions', recipe.instructions)
+            db.session.commit()
+            return recipe.to_dict(), 200
+        else:
+            return jsonify({"error": "Recipe not found"}), 404
     
 api.add_resource(Users, '/users')
 api.add_resource(Recipes, '/recipes')
@@ -349,6 +402,9 @@ api.add_resource(GetUserFavorites, '/userfavorites/<username>')
 api.add_resource(AddFavorite, '/newfavorite')
 api.add_resource(UserFavoritesPage, '/favorites/<int:user_id>')
 api.add_resource(CheckFavorite, '/check_favorite')
+api.add_resource(AddComment, '/comments')
+api.add_resource(DeleteRecipe, '/recipes/<int:id>')
+api.add_resource(UpdateRecipe, '/recipes/<int:id>')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

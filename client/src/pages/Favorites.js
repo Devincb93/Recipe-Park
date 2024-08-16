@@ -12,13 +12,13 @@ function FavoritesPage() {
                 if (response.ok) {
                     const data = await response.json();
                     console.log('Fetched favorites data:', data); // Check the data structure
-                    setFavorites(data);
+                    setFavorites(data); // Ensure this is an array
                 }
             } catch (error) {
                 console.error('Error fetching favorites:', error);
             }
         };
-    
+
         fetchFavorites();
     }, [user.id]);
 
@@ -30,7 +30,8 @@ function FavoritesPage() {
                 method: "DELETE",
             });
             if (response.ok) {
-                setFavorites(prevFavorites => prevFavorites.filter(fav => fav.recipe_id !== recipe_id));
+                // Remove item from state
+                setFavorites(prevFavorites => prevFavorites.filter(fav => fav.id !== recipe_id));
             }
         } catch (error) {
             console.error('Error removing favorite:', error);

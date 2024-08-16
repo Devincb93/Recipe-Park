@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { MyContext } from '../MyContext';
+import CommentForm from './CommentForm';
 
 function RecipePage() {
     const { user } = useContext(MyContext);
     const [recipes, setRecipes] = useState([]);
     const [favorites, setFavorites] = useState({});
+    const [comments, setComments] = useState({});
 
     useEffect(() => {
         const fetchRecipes = async () => {
@@ -23,6 +25,16 @@ function RecipePage() {
                         });
                         setFavorites(favoritesState);
                     }
+
+                    const commentsFetches = data.map(recipe =>
+                        fetch(`/comments/recipe/${recipe.id}`).then(res => res.json())
+                    );
+                    const commentsData = await Promise.all(commentsFetches);
+                    const commentsState = {};
+                    data.forEach((recipe, index) => {
+                        commentsState[recipe.id] = commentsData[index];
+                    });
+                    setComments(commentsState);
                 }
             } catch (error) {
                 console.error('Error fetching recipes:', error);
@@ -33,7 +45,7 @@ function RecipePage() {
     }, [user.username]);
 
     const toggleFavorite = async (recipe_id) => {
-        console.log("Recipe ID:", recipe_id); // Log recipe_id
+        console.log("Recipe ID:", recipe_id);
         const isFavorited = favorites[recipe_id];
         
         if (isFavorited) {
@@ -72,23 +84,46 @@ function RecipePage() {
         }
     };
 
+    const handleCommentAdded = async (recipeId) => {
+        try {
+            const response = await fetch(`/comments/recipe/${recipeId}`);
+            if (response.ok) {
+                const updatedComments = await response.json();
+                setComments(prevComments => ({
+                    ...prevComments,
+                    [recipeId]: updatedComments
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching updated comments:', error);
+        }
+    };
+
     return (
         <div>
             <h1>Recipe Page</h1>
             <ul>
                 {recipes.map(recipe => (
                     <div className='recipe-container-single' key={recipe.id}>
-                        <ul>
-                            <div>
-                                <h2>{recipe.title}</h2>
-                                <p>{recipe.description}</p>
-                                {favorites[recipe.id] ? (
-                                    <span>Favorited</span>
-                                ) : (
-                                    <button onClick={() => toggleFavorite(recipe.id)}>Favorite</button>
-                                )}
-                            </div>
-                        </ul>
+                        <h2>{recipe.title}</h2>
+                        <p>{recipe.description}</p>
+                        {favorites[recipe.id] ? (
+                            <span>Favorited</span>
+                        ) : (
+                            <button onClick={() => toggleFavorite(recipe.id)}>Favorite</button>
+                        )}
+
+                        <div>
+                            <h3>Comments:</h3>
+                            <ul>
+                                {(comments[recipe.id] || []).map(comment => (
+                                    <li key={comment.id}>
+                                        <strong>{comment.username}:</strong> {comment.content}
+                                    </li>
+                                ))}
+                            </ul>
+                            <CommentForm recipeId={recipe.id} onCommentAdded={handleCommentAdded} />
+                        </div>
                     </div>
                 ))}
             </ul>
