@@ -257,17 +257,16 @@ class Recipe_collection_post(Resource):
     
 class RemoveFavorite(Resource):
     def delete(self, user_id, recipe_id):
-        # Find the favorite record
+        
         favorite = RecipeCollection.query.filter_by(user_id=user_id, recipe_id=recipe_id).first()
         print(favorite)
         if favorite:
-            # Delete the record from the database
             db.session.delete(favorite)
             db.session.commit()
-            # Return a JSON response
+            
             return {'status': 'success'}, 200
         else:
-            # Return an error response if the favorite is not found
+            
             return {'status': 'not found'}, 404
     
 class GetUserFavorites(Resource):

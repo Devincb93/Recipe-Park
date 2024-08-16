@@ -101,7 +101,7 @@ function PersonalPage() {
                     <li key={recipe.id}>
                         <h2>{recipe.title}</h2>
                         <p>{recipe.description}</p>
-                        {/* Display other recipe details */}
+                       
                         <button onClick={() => handleDeleteRecipe(recipe.id)}>Delete</button>
                         <button onClick={() => setEditingRecipe(recipe)}>Update</button>
                     </li>

@@ -21,7 +21,7 @@ function CommentForm({ recipeId, setComments }) {
             });
             if (response.ok) {
                 setNewComment('');
-                // Refresh comments (can be optimized by only updating the specific recipe)
+                
                 const updatedCommentsResponse = await fetch(`/comments/recipe/${recipeId}`);
                 const updatedComments = await updatedCommentsResponse.json();
                 setComments(prevComments => ({

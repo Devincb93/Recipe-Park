@@ -34,7 +34,7 @@ function Login() {
             .then((data) => {
                 if (data) {
                     loginUser(data);
-                    navigate('/personal_page'); // Redirect upon successful login
+                    navigate('/personal_page'); 
                 }
             })
             .catch((error) => {

@@ -4,7 +4,7 @@ function RecipeCard({ recipe, userId }) {
     const [isFavorited, setIsFavorited] = useState(false);
 
     useEffect(() => {
-        // Fetch whether this recipe is favorited by the user
+        
         fetch(`/api/check_favorite?user_id=${userId}&recipe_id=${recipe.id}`)
             .then(response => response.json())
             .then(data => setIsFavorited(data.isFavorited))

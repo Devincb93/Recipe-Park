@@ -22,7 +22,7 @@ function CommentForm({ recipeId, onCommentAdded }) {
 
             if (response.ok) {
                 setContent('');
-                onCommentAdded(recipeId); // Refresh comments
+                onCommentAdded(recipeId); 
             } else {
                 console.error('Error adding comment:', response.statusText);
             }
