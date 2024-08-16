@@ -254,8 +254,80 @@ class Recipe_collection_post(Resource):
         )
         db.session.add(new_collection)
         db.session.commit()
+
+
         
     
+class RemoveFavorite(Resource):
+    def delete(self, user_id, recipe_id):
+        favorite = RecipeCollection.query.filter_by(user_id=user_id, recipe_id=recipe_id).first()
+        if favorite:
+            db.session.delete(favorite)
+            db.session.commit()
+            return jsonify({'status': 'success'}), 200
+        return jsonify({'status': 'not found'}), 404
+    
+class GetUserFavorites(Resource):
+    def get(self, username):
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            return jsonify({'status': 'user not found'}), 404
+        
+        favorites = RecipeCollection.query.filter_by(user_id=user.id).all()
+        favorite_recipes = [{'recipe_id': fav.recipe_id, 
+                            'title': Recipe.query.get(fav.recipe_id).title, 
+                            'description': Recipe.query.get(fav.recipe_id).description}
+                            for fav in favorites]
+    
+        return jsonify(favorite_recipes), 200
+
+class AddFavorite(Resource):
+    def post(self):
+        data = request.json
+        user_id = data['user_id']
+        recipe_id = data['recipe_id']
+        
+        existing_favorite = RecipeCollection.query.filter_by(user_id=user_id, recipe_id=recipe_id).first()
+        if existing_favorite:
+            return jsonify({'status': 'already exists'}), 409
+        
+        new_favorite = RecipeCollection(user_id=user_id, recipe_id=recipe_id)
+        db.session.add(new_favorite)
+        db.session.commit()
+        return jsonify({'status': 'success'}), 201
+    
+class UserFavoritesPage(Resource):
+    def get(self):
+        user_id = request.json.get('user_id')
+        recipe_id = request.json.get('recipe_id')
+        
+        if not user_id or not recipe_id:
+            return jsonify({"error": "Missing parameters"}), 400
+
+        existing_entry = RecipeCollection.query.filter_by(user_id=user_id, recipe_id=recipe_id).first()
+        
+        if existing_entry:
+            # Remove from favorites
+            db.session.delete(existing_entry)
+            db.session.commit()
+            return jsonify({"message": "Removed from favorites"}), 200
+        else:
+            # Add to favorites
+            new_entry = RecipeCollection(user_id=user_id, recipe_id=recipe_id)
+            db.session.add(new_entry)
+            db.session.commit()
+            return jsonify({"message": "Added to favorites"}), 200
+        
+class CheckFavorite(Resource):
+    def get():
+        user_id = request.args.get('user_id')
+        recipe_id = request.args.get('recipe_id')
+        
+        if not user_id or not recipe_id:
+            return jsonify({"error": "Missing parameters"}), 400
+
+        is_favorited = RecipeCollection.query.filter_by(user_id=user_id, recipe_id=recipe_id).first() is not None
+        return jsonify({"isFavorited": is_favorited}), 200
 
     
 api.add_resource(Users, '/users')
@@ -276,6 +348,11 @@ api.add_resource(Recipe_by_userss, '/recipe/<int:user_id>')
 api.add_resource(Recipe_by_ing_len, '/recipes_ingredient/<int:user_id>')
 api.add_resource(User_by_username, '/users/<string:username>')
 api.add_resource(Recipe_collection_post, '/newfavorite')
+api.add_resource(RemoveFavorite, '/removefavorite/<int:user_id>/<int:recipe_id>')
+api.add_resource(GetUserFavorites, '/userfavorites/<username>')
+api.add_resource(AddFavorite, '/newfavorite')
+api.add_resource(UserFavoritesPage, '/favorites')
+api.add_resource(CheckFavorite, '/check_favorite')
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

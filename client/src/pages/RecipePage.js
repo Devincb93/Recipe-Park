@@ -1,22 +1,10 @@
-import React, {useState, useEffect, useContext} from 'react'
-import { FaRegHeart } from "react-icons/fa";
-import { FaHeart } from "react-icons/fa";
-import Comments from './Comments';
+import React, { useState, useEffect, useContext } from 'react';
 import { MyContext } from '../MyContext';
 
-
 function RecipePage() {
-    
-    
-    const { user } = useContext(MyContext)
-    const [recipes, setRecipes] = useState([])
-    const [heart, setHeart] = useState({})
-    const [comments, setComments] = useState([])
-    const [userForFav, setUserForFave] = useState({})
-    
-
-
-    
+    const { user } = useContext(MyContext);
+    const [recipes, setRecipes] = useState([]);
+    const [favorites, setFavorites] = useState({});
 
     useEffect(() => {
         const fetchRecipes = async () => {
@@ -25,70 +13,64 @@ function RecipePage() {
                 if (response.ok) {
                     const data = await response.json();
                     setRecipes(data);
-                    
-                   
-                    for (const recipe of data) {
-                        await fetchComments(recipe.id);
+
+                    const userFavoritesResponse = await fetch(`/userfavorites/${user.username}`);
+                    if (userFavoritesResponse.ok) {
+                        const userFavorites = await userFavoritesResponse.json();
+                        const favoritesState = {};
+                        userFavorites.forEach(fav => {
+                            favoritesState[fav.recipe_id] = true;
+                        });
+                        setFavorites(favoritesState);
                     }
-                } else {
-                    console.error('Failed to fetch recipes');
                 }
             } catch (error) {
                 console.error('Error fetching recipes:', error);
             }
         };
 
-        const fetchComments = async (recipeId) => {
+        fetchRecipes();
+    }, [user.username]);
+
+    const toggleFavorite = async (recipe_id) => {
+        const isFavorited = favorites[recipe_id];
+
+        if (isFavorited) {
             try {
-                const response = await fetch(`/comments/recipe/${recipeId}`);
+                const response = await fetch(`/removefavorite/${user.id}/${recipe_id}`, {
+                    method: "DELETE",
+                });
                 if (response.ok) {
-                    const data = await response.json();
-                    setComments(prevComments => ({
-                        ...prevComments,
-                        [recipeId]: data
-                    }));
-                } else {
-                    console.error('Failed to fetch comments');
+                    setFavorites(prevFavorites => {
+                        const updatedFavorites = { ...prevFavorites };
+                        delete updatedFavorites[recipe_id];
+                        return updatedFavorites;
+                    });
                 }
             } catch (error) {
-                console.error('Error fetching comments:', error);
+                console.error('Error removing favorite:', error);
+            }
+        } else {
+            try {
+                const response = await fetch('/newfavorite', {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ user_id: user.id, recipe_id: recipe_id })
+                });
+                if (response.ok) {
+                    setFavorites(prevFavorites => ({
+                        ...prevFavorites,
+                        [recipe_id]: true
+                    }));
+                }
+            } catch (error) {
+                console.error('Error adding to favorites:', error);
             }
         }
+    };
 
-        fetchRecipes();
-
-        const fetchUserforFavorites = () => {
-            fetch(`/users/${user.username}`)
-            .then((resp) => resp.json())
-            .then ((data) => {
-                setUserForFave(data)
-            })
-        }
-        fetchUserforFavorites()
-    }, [])
-
-    const toggleHeart = (recipe_id) => {
-        fetch('/newfavorite', {
-            method: "POST",
-            headers: {
-                "Content-Type":"application/json"
-            },
-            body: JSON.stringify({
-                user_id: userForFav.user_id,
-                recipe_id: recipe_id
-            })
-        })
-        .then((resp) => resp.json)
-        .then((data) => {
-            console.log("success")
-        })
-    }
-
-    
-
-   
-
-   
     return (
         <div>
             <h1>Recipe Page</h1>
@@ -99,11 +81,11 @@ function RecipePage() {
                             <div>
                                 <h2>{recipe.title}</h2>
                                 <p>{recipe.description}</p>
-                                <div className='heart' onClick={() => toggleHeart(recipe.id)}>
-                                    {heart[recipe.id] ? <FaHeart /> : <FaRegHeart />}
-                                </div>
-                                
-                                {/* <Comments comments={comments[recipe.id] || []} onAddComment={addComment} /> */}
+                                {favorites[recipe.id] ? (
+                                    <span>Favorited</span>
+                                ) : (
+                                    <button onClick={() => toggleFavorite(recipe.id)}>Favorite</button>
+                                )}
                             </div>
                         </ul>
                     </div>
@@ -113,4 +95,4 @@ function RecipePage() {
     );
 }
 
-export default RecipePage
+export default RecipePage;
