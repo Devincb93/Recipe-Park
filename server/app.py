@@ -62,7 +62,7 @@ class User_by_id(Resource):
             
 class User_by_username(Resource):
     def get(self, username):
-        user = User.query.get(username)
+        user = User.query.filter_by(username=username).first()
         return user.to_dict(),200
 
 
@@ -195,15 +195,14 @@ class CheckSession(Resource):
 
 
 class Login(Resource):
-    def get(self):
-        username = request.args.get('username')
-        
-        user = User.query.filter(User.username==username).first()
+    def post(self):
+        username = request.get_json().get('username')  
+
+        user = User.query.filter(User.username == username).first()
         if user:
-            # session['user_id'] = user.id
             return user.to_dict(), 200
         else: 
-            return make_response({"Error":"Invalid credentials"},401)
+            return make_response({"Error": "Invalid credentials"}, 401)
 
 class Logout(Resource):
     def delete(self): 
